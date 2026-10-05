@@ -1,0 +1,179 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 3 /Kids [5 0 R 7 0 R 9 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Length 3866 >>
+stream
+BT /F1 18 Tf 50 760 Td (EventHub API interview guide) Tj ET
+BT /F1 12 Tf 50 732 Td (Manual cases, Postman inputs, and the matching Playwright Java tests.) Tj ET
+BT /F1 11 Tf 50 714 Td (API: https://api.eventhub.rahulshettyacademy.com/api/docs/) Tj ET
+BT /F1 14 Tf 50 694 Td (How to run this in Postman) Tj ET
+BT /F1 11 Tf 50 672 Td (1. Open Postman. Click Import. Choose EventHub-Interview.postman_collection.json from) Tj ET
+BT /F1 11 Tf 50 658 Td (Downloads.) Tj ET
+BT /F1 11 Tf 50 644 Td (2. Click the collection EventHub interview, then click Run.) Tj ET
+BT /F1 11 Tf 50 630 Td (3. Leave every folder ticked. Run from EH-01 through the delete requests.) Tj ET
+BT /F1 11 Tf 50 616 Td (4. Do not press Send on a later request by itself. It needs the email, token, and ids from) Tj ET
+BT /F1 11 Tf 50 602 Td (earlier requests.) Tj ET
+BT /F1 11 Tf 50 588 Td (5. Green means the step passed. Open a red step to see which check failed.) Tj ET
+BT /F1 11 Tf 50 574 Td (Base URL: https://api.eventhub.rahulshettyacademy.com/api) Tj ET
+BT /F1 11 Tf 50 560 Td (The first request sets email to learner.<time>@example.com, password to secret12, and marker) Tj ET
+BT /F1 11 Tf 50 546 Td (to case-<time>.) Tj ET
+BT /F1 11 Tf 50 532 Td (Protected calls use header Authorization: Bearer <token>.) Tj ET
+BT /F1 14 Tf 50 512 Td (How to run the same cases in Java) Tj ET
+BT /F1 11 Tf 50 490 Td (Project: Playwright-Java-API-Testing-main) Tj ET
+BT /F1 11 Tf 50 476 Td (Command: mvn -DsuiteXmlFile=src/test/resources/interview-testng.xml test) Tj ET
+BT /F1 11 Tf 50 462 Td (Package: com.qa.api.eventhub.interview) Tj ET
+BT /F1 11 Tf 50 448 Td (AuthenticationTest covers EH-01 to EH-06.) Tj ET
+BT /F1 11 Tf 50 434 Td (AuthorizationTest covers EH-07 and EH-08.) Tj ET
+BT /F1 11 Tf 50 420 Td (EventsTest covers EH-09 to EH-15. The Java update uses its own event so the list events stay) Tj ET
+BT /F1 11 Tf 50 406 Td (unchanged.) Tj ET
+BT /F1 11 Tf 50 392 Td (BookingsTest covers EH-16 to EH-23.) Tj ET
+BT /F1 11 Tf 50 378 Td (PaginationFilterSortTest covers EH-24 to EH-32 and EH-35 to EH-38.) Tj ET
+BT /F1 11 Tf 50 364 Td (ConcurrencyTest covers EH-33 and EH-34.) Tj ET
+BT /F1 14 Tf 50 344 Td (Rules that confuse people) Tj ET
+BT /F1 11 Tf 50 322 Td (data: [] with success true means the call worked and no row matched. It is not always a) Tj ET
+BT /F1 11 Tf 50 308 Td (failure.) Tj ET
+BT /F1 11 Tf 50 294 Td (GET /bookings is empty before you create a booking, and empty again after cancel. Cancel) Tj ET
+BT /F1 11 Tf 50 280 Td (deletes the row.) Tj ET
+BT /F1 11 Tf 50 266 Td (A GET does not use a body. Creating a booking must be POST.) Tj ET
+BT /F1 11 Tf 50 252 Td (Booking fields are customerName, customerEmail, customerPhone. Not name, email, or phone.) Tj ET
+BT /F1 11 Tf 50 238 Td (eventId and quantity are numbers. Do not put them in quotes.) Tj ET
+BT /F1 11 Tf 50 224 Td (Password must be at least 6 characters. secret12 is valid. abc is not.) Tj ET
+BT /F1 11 Tf 50 210 Td (Event date must be in the future. These cases use 2027-12-01T10:00:00.000Z.) Tj ET
+BT /F1 11 Tf 50 196 Td (sort=price does not reorder events. The newest event stays first.) Tj ET
+BT /F1 11 Tf 50 182 Td (Two bookings for the last seat should be one success and one rejection. This server often) Tj ET
+BT /F1 11 Tf 50 168 Td (accepts both. Seats must not go below 0.) Tj ET
+BT /F1 14 Tf 50 148 Td (1 Authentication) Tj ET
+BT /F1 11 Tf 50 126 Td (EH-01 POST /auth/register. Input: email learner.<time>@example.com, password secret12.) Tj ET
+BT /F1 11 Tf 50 112 Td (Expected: 201, success true, a token, and the same email.) Tj ET
+BT /F1 11 Tf 50 98 Td (EH-02 POST /auth/login. Input: the same email and password secret12. Expected: 200 and a) Tj ET
+BT /F1 11 Tf 50 84 Td (token.) Tj ET
+BT /F1 11 Tf 50 70 Td (EH-03 GET /auth/me. Input: Authorization Bearer token. Expected: 200 and the same email.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+6 0 obj
+<< /Length 4109 >>
+stream
+BT /F1 11 Tf 50 760 Td (EH-04 POST /auth/register again. Input: the same email and password. Expected: 400, error) Tj ET
+BT /F1 11 Tf 50 746 Td (Email already registered.) Tj ET
+BT /F1 11 Tf 50 732 Td (EH-05 POST /auth/register. Input: email short.<marker>@example.com, password abc. Expected:) Tj ET
+BT /F1 11 Tf 50 718 Td (400 Validation failed, details include field password.) Tj ET
+BT /F1 11 Tf 50 704 Td (EH-06 POST /auth/register. Input: email not-an-email, password secret12. Expected: 400,) Tj ET
+BT /F1 11 Tf 50 690 Td (details include field email.) Tj ET
+BT /F1 14 Tf 50 670 Td (2 Authorization) Tj ET
+BT /F1 11 Tf 50 648 Td (EH-07 GET /events. Input: no token. Expected: 401, error Unauthorized.) Tj ET
+BT /F1 11 Tf 50 634 Td (EH-08 GET /auth/me. Input: Authorization Bearer not-a-token. Expected: 401, error Invalid or) Tj ET
+BT /F1 11 Tf 50 620 Td (expired token.) Tj ET
+BT /F1 14 Tf 50 600 Td (3 Events) Tj ET
+BT /F1 11 Tf 50 578 Td (Three events are created. Titles contain the marker.) Tj ET
+BT /F1 11 Tf 50 564 Td (Workshop: category Workshop, city Chennai, venue Hall A, description desc-<marker>, price) Tj ET
+BT /F1 11 Tf 50 550 Td (10, seats 5. Id saved as eventId1.) Tj ET
+BT /F1 11 Tf 50 536 Td (Concert: category Concert, city Chennai, venue venue-<marker>, description music night,) Tj ET
+BT /F1 11 Tf 50 522 Td (price 40, seats 5. Id saved as eventId2.) Tj ET
+BT /F1 11 Tf 50 508 Td (Sports: category Sports, city Hyderabad, venue Stadium, description match day, price 90,) Tj ET
+BT /F1 11 Tf 50 494 Td (seats 5. Id saved as eventId3.) Tj ET
+BT /F1 11 Tf 50 480 Td (EH-09 POST /events. Input: { title: Incomplete } plus the token. Expected: 400 Validation) Tj ET
+BT /F1 11 Tf 50 466 Td (failed.) Tj ET
+BT /F1 11 Tf 50 452 Td (EH-10 POST /events. Input: the workshop. Expected: 201, availableSeats 5, id saved as) Tj ET
+BT /F1 11 Tf 50 438 Td (eventId1.) Tj ET
+BT /F1 11 Tf 50 424 Td (EH-11 GET /events/{{eventId1}}. Expected: 200, city Chennai.) Tj ET
+BT /F1 11 Tf 50 410 Td (EH-12 GET /events/99999999. Expected: 404.) Tj ET
+BT /F1 11 Tf 50 396 Td (EH-13 PUT /events/{{eventId1}}. Input: { title: Only title }. Expected: 400 Validation) Tj ET
+BT /F1 11 Tf 50 382 Td (failed.) Tj ET
+BT /F1 11 Tf 50 368 Td (EH-14 POST /events. Input: the concert. Expected: 201, id saved as eventId2.) Tj ET
+BT /F1 11 Tf 50 354 Td (EH-15 POST /events. Input: the sports event. Expected: 201, id saved as eventId3.) Tj ET
+BT /F1 11 Tf 50 340 Td (Java EventsTest also replaces one separate event \(venue Hall B, price 15\) and deletes it) Tj ET
+BT /F1 11 Tf 50 326 Td (twice. First delete is 200 Event deleted successfully. Second delete is 404.) Tj ET
+BT /F1 14 Tf 50 306 Td (4 Bookings) Tj ET
+BT /F1 11 Tf 50 284 Td (EH-16 GET /bookings?eventId={{eventId1}}. No body. Expected: 200, total 0, data empty.) Tj ET
+BT /F1 11 Tf 50 270 Td (Correct, because no ticket exists yet.) Tj ET
+BT /F1 11 Tf 50 256 Td (EH-17 POST /bookings. Input: eventId eventId1 with no quotes, customerName Priya Sharma,) Tj ET
+BT /F1 11 Tf 50 242 Td (customerEmail priya.sharma@email.com, customerPhone 9876543210, quantity 1 with no quotes.) Tj ET
+BT /F1 11 Tf 50 228 Td (Expected: 201, status confirmed, totalPrice 10.) Tj ET
+BT /F1 11 Tf 50 214 Td (EH-18 GET /events/{{eventId1}}. Expected: availableSeats 4.) Tj ET
+BT /F1 11 Tf 50 200 Td (EH-19 GET /bookings?eventId={{eventId1}}. Expected: total 1 and the saved booking id. Look) Tj ET
+BT /F1 11 Tf 50 186 Td (here to see the booking. Do this before cancel.) Tj ET
+BT /F1 11 Tf 50 172 Td (EH-20 GET /bookings/{{bookingId}}. Expected: 200, quantity 1.) Tj ET
+BT /F1 11 Tf 50 158 Td (EH-21 POST /bookings. Input: quantity 10 while 4 seats remain. Expected: 400 and the error) Tj ET
+BT /F1 11 Tf 50 144 Td (contains available. Seats stay 4.) Tj ET
+BT /F1 11 Tf 50 130 Td (EH-22 DELETE /bookings/{{bookingId}}. Expected: 200, message Booking cancelled.) Tj ET
+BT /F1 11 Tf 50 116 Td (EH-23 GET /bookings?eventId={{eventId1}}. Expected: data empty, total 0. Then the event has) Tj ET
+BT /F1 11 Tf 50 102 Td (availableSeats 5.) Tj ET
+BT /F1 14 Tf 50 82 Td (5 Pagination) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+8 0 obj
+<< /Length 3592 >>
+stream
+BT /F1 11 Tf 50 760 Td (All three calls use search={{marker}} and limit=2. Only the 3 events above match.) Tj ET
+BT /F1 11 Tf 50 746 Td (EH-24 page=1. Expected: 2 rows, total 3, page 1, limit 2, totalPages 2.) Tj ET
+BT /F1 11 Tf 50 732 Td (EH-25 page=2. Expected: 1 row. That id is not on page 1. total stays 3.) Tj ET
+BT /F1 11 Tf 50 718 Td (EH-26 page=3. Expected: 0 rows, total still 3, totalPages still 2. Empty data is correct.) Tj ET
+BT /F1 14 Tf 50 698 Td (6 Filtering) Tj ET
+BT /F1 11 Tf 50 676 Td (EH-27 search={{marker}} and category=Workshop. Expected: total 1, the workshop.) Tj ET
+BT /F1 11 Tf 50 662 Td (EH-28 search={{marker}} and city=chennai. Lowercase still matches. Expected: total 2, both) Tj ET
+BT /F1 11 Tf 50 648 Td (city Chennai.) Tj ET
+BT /F1 11 Tf 50 634 Td (EH-29 search=desc-{{marker}}. Expected: 1 row, the workshop. Search checks title,) Tj ET
+BT /F1 11 Tf 50 620 Td (description, and venue.) Tj ET
+BT /F1 11 Tf 50 606 Td (EH-30 search={{marker}}, category=Sports, city=Chennai. Expected: data empty, total 0. The) Tj ET
+BT /F1 11 Tf 50 592 Td (sports event is in Hyderabad.) Tj ET
+BT /F1 14 Tf 50 572 Td (7 Sorting) Tj ET
+BT /F1 11 Tf 50 550 Td (EH-31 GET /events?search={{marker}}&limit=10. Expected order: sports, concert, workshop.) Tj ET
+BT /F1 11 Tf 50 536 Td (Prices 90, 40, 10. The sports event was created last.) Tj ET
+BT /F1 11 Tf 50 522 Td (EH-32 Add sort=price and order=asc. Price low to high would be workshop 10, concert 40,) Tj ET
+BT /F1 11 Tf 50 508 Td (sports 90. Expected: sports, concert, workshop and prices 90, 40, 10. The API does not sort) Tj ET
+BT /F1 11 Tf 50 494 Td (by price.) Tj ET
+BT /F1 11 Tf 50 480 Td (EH-35 Same search with sort=price and order=desc. Switching asc to desc does not flip the) Tj ET
+BT /F1 11 Tf 50 466 Td (list. Expected: sports, concert, workshop again.) Tj ET
+BT /F1 11 Tf 50 452 Td (EH-36 sort=title and order=asc. Title A to Z would be concert, sports, workshop. Expected:) Tj ET
+BT /F1 11 Tf 50 438 Td (sports, concert, workshop.) Tj ET
+BT /F1 11 Tf 50 424 Td (EH-37 sort=city and order=asc. City A to Z would start with Chennai. Expected: first row is) Tj ET
+BT /F1 11 Tf 50 410 Td (Hyderabad, then Chennai, then Chennai.) Tj ET
+BT /F1 11 Tf 50 396 Td (EH-38 sort=title and order=asc with page=1 and limit=2, then page=2. Page 1 is sports and) Tj ET
+BT /F1 11 Tf 50 382 Td (concert. Page 2 is the workshop. Each id is smaller than the id before it.) Tj ET
+BT /F1 14 Tf 50 362 Td (8 Concurrent calls) Tj ET
+BT /F1 11 Tf 50 340 Td (EH-33 Register one.<time>@example.com and two.<time>@example.com at the same time. Password) Tj ET
+BT /F1 11 Tf 50 326 Td (secret12 for both. Expected: both return 201.) Tj ET
+BT /F1 11 Tf 50 312 Td (EH-34 Create an event with totalSeats 1 and price 80. Send two POST /bookings with quantity) Tj ET
+BT /F1 11 Tf 50 298 Td (1 at the same time. Customer is Priya Sharma, priya.sharma@email.com, phone 9876543210.) Tj ET
+BT /F1 11 Tf 50 284 Td (Expected for a correct seat lock: one response 201 and the other 400. availableSeats ends at) Tj ET
+BT /F1 11 Tf 50 270 Td (0.) Tj ET
+BT /F1 11 Tf 50 256 Td (What this server often does: both responses are 201, and two confirmed tickets exist for one) Tj ET
+BT /F1 11 Tf 50 242 Td (seat. The automated check allows 201 or 400 and fails if seats go below 0.) Tj ET
+BT /F1 14 Tf 50 222 Td (Cleanup) Tj ET
+BT /F1 11 Tf 50 200 Td (DELETE /events/{{eventId1}}, then eventId2, then eventId3. Each expected result is 200.) Tj ET
+BT /F1 11 Tf 50 186 Td (Run cleanup only after the earlier folders. A new collection run creates new ids.) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 3 0 R >> >> >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000127 00000 n 
+0000000197 00000 n 
+0000004115 00000 n 
+0000004241 00000 n 
+0000008402 00000 n 
+0000008528 00000 n 
+0000012172 00000 n 
+trailer << /Size 10 /Root 1 0 R >>
+startxref
+12298
+%%EOF

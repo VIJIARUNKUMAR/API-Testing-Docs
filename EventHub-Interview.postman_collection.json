@@ -1,0 +1,1402 @@
+{
+  "info": {
+    "name": "EventHub interview",
+    "description": "Run the whole collection from top to bottom. The first request creates a new email. Same cases as the PDF and the Playwright interview suite.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.eventhub.rahulshettyacademy.com/api"
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": "secret12"
+    },
+    {
+      "key": "marker",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "eventId1",
+      "value": ""
+    },
+    {
+      "key": "eventId2",
+      "value": ""
+    },
+    {
+      "key": "eventId3",
+      "value": ""
+    },
+    {
+      "key": "bookingId",
+      "value": ""
+    },
+    {
+      "key": "page1Ids",
+      "value": "[]"
+    }
+  ],
+  "item": [
+    {
+      "name": "1 Authentication",
+      "description": "EH-01 to EH-06.",
+      "item": [
+        {
+          "name": "EH-01 Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "Input: new email and password secret12. Expected: 201 and a token.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const stamp = Date.now();",
+                  "pm.collectionVariables.set('email', 'learner.' + stamp + '@example.com');",
+                  "pm.collectionVariables.set('password', 'secret12');",
+                  "pm.collectionVariables.set('marker', 'case-' + stamp);",
+                  "pm.collectionVariables.set('token', '');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-01 register returns 201 and a token', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.success).to.eql(true);",
+                  "    pm.expect(body.user.email).to.eql(pm.collectionVariables.get('email'));",
+                  "    pm.collectionVariables.set('token', body.token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-02 Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Input: the same email and password secret12. Expected: 200 and a token.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-02 login returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.collectionVariables.set('token', pm.response.json().token);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-03 Current user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/me",
+            "description": "Input: Authorization Bearer token. Expected: 200 and the same email."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-03 email matches', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().user.email).to.eql(pm.collectionVariables.get('email'));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-04 Register the same email again",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "Input: the same email and password. Expected: 400 Email already registered.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-04 duplicate email is rejected', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().error).to.eql('Email already registered');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-05 Short password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "Input: a new email and password abc. Expected: 400 and a password field error.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"short.{{marker}}@example.com\",\n  \"password\": \"abc\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-05 short password is rejected', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    const fields = pm.response.json().details.map(function (row) { return row.field; });",
+                  "    pm.expect(fields).to.include('password');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-06 Invalid email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/register",
+            "description": "Input: email not-an-email and password secret12. Expected: 400 and an email field error.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"not-an-email\",\n  \"password\": \"secret12\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-06 invalid email is rejected', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    const fields = pm.response.json().details.map(function (row) { return row.field; });",
+                  "    pm.expect(fields).to.include('email');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2 Authorization",
+      "description": "EH-07 and EH-08.",
+      "item": [
+        {
+          "name": "EH-07 List events with no token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/events",
+            "description": "Input: no Authorization header. Expected: 401 Unauthorized."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-07 missing token is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.expect(pm.response.json().error).to.eql('Unauthorized');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-08 Fake token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer not-a-token"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/me",
+            "description": "Input: Authorization Bearer not-a-token. Expected: 401 Invalid or expired token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-08 fake token is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "    pm.expect(pm.response.json().error).to.eql('Invalid or expired token');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3 Events",
+      "description": "EH-09 to EH-15.",
+      "item": [
+        {
+          "name": "EH-09 Create with only a title",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "description": "Input: { title: Incomplete } and the token. Expected: 400 Validation failed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Incomplete\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-09 missing fields are rejected', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().error).to.eql('Validation failed');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-10 Create workshop",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "description": "Input: Workshop, Chennai, price 10, 5 seats, date 2027-12-01. Expected: 201 and availableSeats 5.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{marker}} workshop\",\n  \"description\": \"desc-{{marker}}\",\n  \"category\": \"Workshop\",\n  \"venue\": \"Hall A\",\n  \"city\": \"Chennai\",\n  \"eventDate\": \"2027-12-01T10:00:00.000Z\",\n  \"price\": 10,\n  \"totalSeats\": 5\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-10 workshop is created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.availableSeats).to.eql(5);",
+                  "    pm.collectionVariables.set('eventId1', String(data.id));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-11 Read the workshop",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventId1}}",
+            "description": "Input: eventId1 and the token. Expected: 200 and city Chennai."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-11 city is Chennai', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.city).to.eql('Chennai');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-12 Unknown event",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/99999999",
+            "description": "Input: id 99999999 and the token. Expected: 404."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-12 unknown id is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-13 Update with only a title",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventId1}}",
+            "description": "Input: { title: Only title }. Expected: 400. PUT needs every required field.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Only title\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-13 partial update is rejected', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().error).to.eql('Validation failed');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-14 Create concert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "description": "Input: Concert, Chennai, price 40, 5 seats. Expected: 201. Id saved as eventId2.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{marker}} concert\",\n  \"description\": \"music night\",\n  \"category\": \"Concert\",\n  \"venue\": \"venue-{{marker}}\",\n  \"city\": \"Chennai\",\n  \"eventDate\": \"2027-12-01T10:00:00.000Z\",\n  \"price\": 40,\n  \"totalSeats\": 5\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-14 concert is created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.collectionVariables.set('eventId2', String(pm.response.json().data.id));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-15 Create sports event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events",
+            "description": "Input: Sports, Hyderabad, price 90, 5 seats. Expected: 201. Id saved as eventId3.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{marker}} sports\",\n  \"description\": \"match day\",\n  \"category\": \"Sports\",\n  \"venue\": \"Stadium\",\n  \"city\": \"Hyderabad\",\n  \"eventDate\": \"2027-12-01T10:00:00.000Z\",\n  \"price\": 90,\n  \"totalSeats\": 5\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-15 sports event is created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.collectionVariables.set('eventId3', String(pm.response.json().data.id));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4 Bookings",
+      "description": "EH-16 to EH-23. Create is POST. List is GET and has no body.",
+      "item": [
+        {
+          "name": "EH-16 List bookings before creating one",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings?eventId={{eventId1}}",
+            "description": "Input: eventId1 and the token. No body. Expected: total 0. Empty data is correct here."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-16 no booking yet', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().pagination.total).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-17 Create booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings",
+            "description": "POST, not GET. eventId has no quotes. Fields are customerName, customerEmail, customerPhone. quantity is 1 with no quotes. Expected: 201, confirmed, totalPrice 10.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": {{eventId1}},\n  \"customerName\": \"Priya Sharma\",\n  \"customerEmail\": \"priya.sharma@email.com\",\n  \"customerPhone\": \"9876543210\",\n  \"quantity\": 1\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-17 one ticket is booked', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    const data = pm.response.json().data;",
+                  "    pm.expect(data.status).to.eql('confirmed');",
+                  "    pm.expect(data.quantity).to.eql(1);",
+                  "    pm.expect(Number(data.totalPrice)).to.eql(10);",
+                  "    pm.collectionVariables.set('bookingId', String(data.id));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-18 Seats went down",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventId1}}",
+            "description": "Expected: availableSeats is 4."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-18 four seats remain', function () {",
+                  "    pm.expect(pm.response.json().data.availableSeats).to.eql(4);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-19 List bookings after create",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings?eventId={{eventId1}}",
+            "description": "Expected: total 1. This is the request that shows the booking. Do this before cancel."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-19 the list has the booking', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.pagination.total).to.eql(1);",
+                  "    pm.expect(body.data[0].id).to.eql(Number(pm.collectionVariables.get('bookingId')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-20 Read booking by id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings/{{bookingId}}",
+            "description": "Expected: 200 and quantity 1."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-20 quantity is 1', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data.quantity).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-21 Buy 10 when 4 seats remain",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings",
+            "description": "Input: same customer, quantity 10. Expected: 400 and the word available. Seats stay 4.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventId\": {{eventId1}},\n  \"customerName\": \"Priya Sharma\",\n  \"customerEmail\": \"priya.sharma@email.com\",\n  \"customerPhone\": \"9876543210\",\n  \"quantity\": 10\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-21 too many seats is rejected', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().error).to.include('available');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-22 Cancel the booking",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings/{{bookingId}}",
+            "description": "Expected: 200 and message Booking cancelled."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-22 booking is cancelled', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().message).to.eql('Booking cancelled');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-23 List is empty after cancel",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/bookings?eventId={{eventId1}}",
+            "description": "Expected: data is empty and total is 0. Cancel deletes the booking."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-23 list is empty after cancel', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().data).to.eql([]);",
+                  "    pm.expect(pm.response.json().pagination.total).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5 Pagination",
+      "description": "EH-24 to EH-26.",
+      "item": [
+        {
+          "name": "EH-24 Page 1",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&page=1&limit=2",
+            "description": "Expected: 2 rows, total 3, totalPages 2."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-24 page 1 has 2 rows', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.data.length).to.eql(2);",
+                  "    pm.expect(body.pagination.total).to.eql(3);",
+                  "    pm.expect(body.pagination.totalPages).to.eql(2);",
+                  "    pm.collectionVariables.set('page1Ids', JSON.stringify(body.data.map(function (row) { return row.id; })));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-25 Page 2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&page=2&limit=2",
+            "description": "Expected: 1 row, and that id was not on page 1."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-25 page 2 does not repeat page 1', function () {",
+                  "    const body = pm.response.json();",
+                  "    const page1 = JSON.parse(pm.collectionVariables.get('page1Ids'));",
+                  "    pm.expect(body.data.length).to.eql(1);",
+                  "    pm.expect(page1).to.not.include(body.data[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-26 Page 3",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&page=3&limit=2",
+            "description": "Expected: data is empty and total is still 3."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-26 page 3 is empty', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.data.length).to.eql(0);",
+                  "    pm.expect(body.pagination.total).to.eql(3);",
+                  "    pm.expect(body.pagination.totalPages).to.eql(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6 Filtering",
+      "description": "EH-27 to EH-30.",
+      "item": [
+        {
+          "name": "EH-27 Workshop only",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&category=Workshop",
+            "description": "Expected: 1 row, the workshop."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-27 one workshop', function () {",
+                  "    pm.expect(pm.response.json().pagination.total).to.eql(1);",
+                  "    pm.expect(pm.response.json().data[0].id).to.eql(Number(pm.collectionVariables.get('eventId1')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-28 City chennai",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&city=chennai",
+            "description": "Input: city in lowercase. Expected: 2 rows, both city Chennai."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-28 two Chennai events', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.pagination.total).to.eql(2);",
+                  "    body.data.forEach(function (row) { pm.expect(row.city).to.eql('Chennai'); });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-29 Search the description",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search=desc-{{marker}}",
+            "description": "Expected: 1 row, the workshop."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-29 description search finds the workshop', function () {",
+                  "    pm.expect(pm.response.json().data.length).to.eql(1);",
+                  "    pm.expect(pm.response.json().data[0].id).to.eql(Number(pm.collectionVariables.get('eventId1')));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-30 Sports in Chennai",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&category=Sports&city=Chennai",
+            "description": "Expected: data empty and total 0. The sports event is in Hyderabad."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-30 no match is an empty list', function () {",
+                  "    pm.expect(pm.response.json().data).to.eql([]);",
+                  "    pm.expect(pm.response.json().pagination.total).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7 Sorting",
+      "description": "EH-31, EH-32, and EH-35 to EH-38. sort and order are ignored. Newest id stays first.",
+      "item": [
+        {
+          "name": "EH-31 Newest first",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&limit=10",
+            "description": "Expected ids: sports, concert, workshop."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-31 newest id is first', function () {",
+                  "    const ids = pm.response.json().data.map(function (row) { return row.id; });",
+                  "    pm.expect(ids).to.eql([",
+                  "        Number(pm.collectionVariables.get('eventId3')),",
+                  "        Number(pm.collectionVariables.get('eventId2')),",
+                  "        Number(pm.collectionVariables.get('eventId1'))",
+                  "    ]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-32 sort=price is ignored",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&sort=price&order=asc&limit=10",
+            "description": "Expected: same order, prices 90, 40, 10."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-32 price order is unchanged', function () {",
+                  "    const rows = pm.response.json().data;",
+                  "    pm.expect(rows[0].id).to.eql(Number(pm.collectionVariables.get('eventId3')));",
+                  "    pm.expect(rows.map(function (row) { return Number(row.price); })).to.eql([90, 40, 10]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-35 sort=price order=desc",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&sort=price&order=desc&limit=10",
+            "description": "Input: sort=price and order=desc. If this worked, prices would still be 90, 40, 10, but switching asc to desc must change nothing because sort is ignored. Expected: sports, concert, workshop."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-35 desc does not change the list', function () {",
+                  "    const ids = pm.response.json().data.map(function (row) { return row.id; });",
+                  "    pm.expect(ids).to.eql([",
+                  "        Number(pm.collectionVariables.get('eventId3')),",
+                  "        Number(pm.collectionVariables.get('eventId2')),",
+                  "        Number(pm.collectionVariables.get('eventId1'))",
+                  "    ]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-36 sort=title order=asc",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&sort=title&order=asc&limit=10",
+            "description": "Titles in A to Z order would be concert, sports, workshop. Expected: sports, concert, workshop. Title sort is ignored."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-36 title sort is ignored', function () {",
+                  "    const titles = pm.response.json().data.map(function (row) { return row.title; });",
+                  "    const marker = pm.collectionVariables.get('marker');",
+                  "    pm.expect(titles).to.eql([marker + ' sports', marker + ' concert', marker + ' workshop']);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-37 sort=city order=asc",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&sort=city&order=asc&limit=10",
+            "description": "City A to Z would start with Chennai. Expected: first city is Hyderabad, because the sports event is newest."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('EH-37 city sort is ignored', function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.data[0].city).to.eql('Hyderabad');",
+                  "    pm.expect(body.data[0].id).to.eql(Number(pm.collectionVariables.get('eventId3')));",
+                  "    pm.expect(body.data[1].city).to.eql('Chennai');",
+                  "    pm.expect(body.data[2].city).to.eql('Chennai');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-38 Pages keep newest-first order",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events?search={{marker}}&sort=title&order=asc&page=1&limit=2",
+            "description": "Page 1 has the sports and concert events. The test then reads page 2. Together they are sports, concert, workshop, and each id is smaller than the one before it."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const first = pm.response.json().data.map(function (row) { return row.id; });",
+                  "pm.sendRequest({",
+                  "    url: pm.collectionVariables.get('baseUrl') + '/events?search=' + pm.collectionVariables.get('marker') + '&sort=title&order=asc&page=2&limit=2',",
+                  "    method: 'GET',",
+                  "    header: { Authorization: 'Bearer ' + pm.collectionVariables.get('token') }",
+                  "}, function (err, res) {",
+                  "    const second = res.json().data.map(function (row) { return row.id; });",
+                  "    const stitched = first.concat(second);",
+                  "    pm.test('EH-38 page 2 continues newest first', function () {",
+                  "        pm.expect(err).to.eql(null);",
+                  "        pm.expect(stitched).to.eql([",
+                  "            Number(pm.collectionVariables.get('eventId3')),",
+                  "            Number(pm.collectionVariables.get('eventId2')),",
+                  "            Number(pm.collectionVariables.get('eventId1'))",
+                  "        ]);",
+                  "        pm.expect(stitched[0]).to.be.above(stitched[1]);",
+                  "        pm.expect(stitched[1]).to.be.above(stitched[2]);",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8 Concurrent and cleanup",
+      "description": "EH-33 and EH-34, then delete the three events.",
+      "item": [
+        {
+          "name": "EH-33 Register two users at the same time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "The test registers two different emails together. Expected: both return 201."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function sendRegister(email) {",
+                  "    return new Promise(function (resolve, reject) {",
+                  "        pm.sendRequest({",
+                  "            url: pm.collectionVariables.get('baseUrl') + '/auth/register',",
+                  "            method: 'POST',",
+                  "            header: { 'Content-Type': 'application/json' },",
+                  "            body: { mode: 'raw', raw: JSON.stringify({ email: email, password: 'secret12' }) }",
+                  "        }, function (err, res) { if (err) reject(err); else resolve(res); });",
+                  "    });",
+                  "}",
+                  "return (async function () {",
+                  "    const stamp = Date.now();",
+                  "    const results = await Promise.all([",
+                  "        sendRegister('one.' + stamp + '@example.com'),",
+                  "        sendRegister('two.' + stamp + '@example.com')",
+                  "    ]);",
+                  "    pm.test('EH-33 both registrations succeed', function () {",
+                  "        pm.expect(results[0].code).to.eql(201);",
+                  "        pm.expect(results[1].code).to.eql(201);",
+                  "    });",
+                  "})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EH-34 Two bookings for the last seat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "Creates an event with 1 seat, then sends two bookings together. Seats must not go below 0. A correct lock would return one 201 and one 400. This server often accepts both."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function send(method, path, token, body) {",
+                  "    const headers = { 'Content-Type': 'application/json' };",
+                  "    if (token) headers.Authorization = 'Bearer ' + token;",
+                  "    const req = { url: pm.collectionVariables.get('baseUrl') + path, method: method, header: headers };",
+                  "    if (body) req.body = { mode: 'raw', raw: JSON.stringify(body) };",
+                  "    return new Promise(function (resolve, reject) {",
+                  "        pm.sendRequest(req, function (err, res) { if (err) reject(err); else resolve(res); });",
+                  "    });",
+                  "}",
+                  "return (async function () {",
+                  "    const token = pm.collectionVariables.get('token');",
+                  "    const created = await send('POST', '/events', token, {",
+                  "        title: 'last seat', description: 'one', category: 'Concert', venue: 'Hall', city: 'Mumbai',",
+                  "        eventDate: '2027-12-01T10:00:00.000Z', price: 80, totalSeats: 1",
+                  "    });",
+                  "    const eventId = created.json().data.id;",
+                  "    const ticket = { eventId: eventId, customerName: 'Priya Sharma', customerEmail: 'priya.sharma@email.com', customerPhone: '9876543210', quantity: 1 };",
+                  "    const results = await Promise.all([",
+                  "        send('POST', '/bookings', token, ticket),",
+                  "        send('POST', '/bookings', token, ticket)",
+                  "    ]);",
+                  "    const after = await send('GET', '/events/' + eventId, token);",
+                  "    pm.test('EH-34 seats do not go below 0', function () {",
+                  "        pm.expect([201, 400]).to.include(results[0].code);",
+                  "        pm.expect([201, 400]).to.include(results[1].code);",
+                  "        pm.expect(after.json().data.availableSeats).to.be.at.least(0);",
+                  "    });",
+                  "    await send('DELETE', '/events/' + eventId, token);",
+                  "})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete workshop",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventId1}}",
+            "description": "Expected: 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('workshop deleted', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete concert",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventId2}}",
+            "description": "Expected: 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('concert deleted', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete sports event",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/events/{{eventId3}}",
+            "description": "Expected: 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('sports event deleted', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
